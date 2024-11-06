@@ -5,17 +5,20 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ArrowLeft, ArrowRight } from "lucide-react"
+import { useRouter } from "next/router"
 
 export default function Component() {
   const [selected, setSelected] = useState<string>("")
   const [showError, setShowError] = useState(false)
+
+  const router = useRouter();
 
   const handleNext = () => {
     if (!selected) {
       setShowError(true)
       return
     }
-    // Handle navigation to next question
+    router.push(`/rating`);
   }
 
   return (

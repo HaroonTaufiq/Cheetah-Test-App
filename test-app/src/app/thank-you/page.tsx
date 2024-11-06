@@ -3,6 +3,10 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Home } from "lucide-react"
 
 export default function Component() {
+
+    
+
+
     return (
         <div className="min-h-screen bg-gradient-to-tl from-black to-gray-600 flex items-center justify-center p-4">
             <div className="max-w-4xl w-full grid lg:grid-cols-2 gap-8 items-center">
@@ -56,7 +60,7 @@ export default function Component() {
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" /> Back
                         </Button>
-                        <Button
+                        <Button 
                             className="bg-white hover:bg-gray-100 text-black"
                         >
                             <Home className="mr-2 h-4 w-4" /> Back to Home

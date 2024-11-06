@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 type Ratings = {
   comfort: number | null
@@ -18,12 +19,14 @@ export default function Component() {
   })
   const [showErrors, setShowErrors] = useState(false)
 
+  const router = useRouter()
+
   const handleSend = () => {
     if (Object.values(ratings).some(rating => rating === null)) {
       setShowErrors(true)
       return
     }
-    // Handle form submission
+    router.push('/thank-you')
   }
 
   const handleRating = (category: keyof Ratings, value: number) => {
@@ -31,7 +34,7 @@ export default function Component() {
     setShowErrors(false)
   }
 
-  const RatingScale = ({ category }: { category: keyof Ratings }) => (
+  const RatingScale = ({ category, error }: { category: keyof Ratings; error: boolean }) => (
     <div className="space-y-2">
       <div className="bg-white rounded-full p-4 flex items-center justify-between">
         <span className="font-medium text-black min-w-[100px]">
@@ -52,7 +55,7 @@ export default function Component() {
           ))}
         </div>
       </div>
-      {showErrors && ratings[category] === null && (
+      {error && (
         <p className="text-red-500 text-sm pl-4">Please select a score</p>
       )}
     </div>
@@ -69,9 +72,9 @@ export default function Component() {
         </div>
 
         <div className="space-y-6">
-          <RatingScale category="comfort" />
-          <RatingScale category="looks" />
-          <RatingScale category="price" />
+          <RatingScale category="comfort" error={showErrors && ratings.comfort === null} />
+          <RatingScale category="looks" error={showErrors && ratings.looks === null} />
+          <RatingScale category="price" error={showErrors && ratings.price === null} />
         </div>
 
         <div className="flex justify-between pt-4">

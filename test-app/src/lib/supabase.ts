@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Types for our survey data
+export type SurveyStep = 1 | 2
+
+// Types for our survey data
 export type SurveyProgress = {
   email: string
   progress: {
@@ -11,7 +14,8 @@ export type SurveyProgress = {
       Price?: number
     }
   }
-  status: 'in-progress' | 'completed'
+  status: 'in-progress' | 'completed',
+  step: SurveyStep
 }
 
 // Initialize Supabase client
@@ -37,9 +41,11 @@ export async function getOrCreateSurveyProgress(email: string): Promise<SurveyPr
     const newProgress: SurveyProgress = {
       email,
       progress: {},
-      status: 'in-progress'
+      status: 'in-progress',
+      step: 1
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: newData, error: insertError } = await supabase
       .from('survey_progress')
       .insert([{ 
@@ -64,7 +70,7 @@ export async function getOrCreateSurveyProgress(email: string): Promise<SurveyPr
 // Function to update survey progress
 export async function updateSurveyProgress(
   email: string, 
-  step: number, 
+  step: SurveyStep, 
   progressData: Partial<SurveyProgress['progress']>
 ): Promise<boolean> {
   const { data: existingData } = await supabase
@@ -120,7 +126,7 @@ export async function completeSurvey(email: string): Promise<boolean> {
 
 // Function to check survey status
 export async function getSurveyStatus(email: string): Promise<{
-  step: number
+  step: SurveyStep
   status: string
 } | null> {
   const { data, error } = await supabase
