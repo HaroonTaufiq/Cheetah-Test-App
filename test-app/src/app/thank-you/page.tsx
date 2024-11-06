@@ -1,10 +1,32 @@
+'use client'
+
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Home } from "lucide-react"
 
+import { useEffect } from 'react'
+// import { useRouter } from 'next/navigation'
+import { completeSurvey } from '@/lib/supabase'
+
 export default function Component() {
 
-    
+    // const router = useRouter()
+
+    useEffect(() => {
+        const finalizeSurvey = async () => {
+            const email = localStorage.getItem('userEmail') // Assuming you stored the email in localStorage
+            if (email) {
+                const success = await completeSurvey(email)
+                if (!success) {
+                    console.error('Failed to complete survey')
+                    // Handle error (e.g., show error message to user)
+                }
+                localStorage.removeItem('userEmail') // Clear the stored email
+            }
+        }
+
+        finalizeSurvey()
+    }, [])
 
 
     return (
@@ -60,7 +82,7 @@ export default function Component() {
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" /> Back
                         </Button>
-                        <Button 
+                        <Button
                             className="bg-white hover:bg-gray-100 text-black"
                         >
                             <Home className="mr-2 h-4 w-4" /> Back to Home
