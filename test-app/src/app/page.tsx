@@ -1,101 +1,100 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { getOrCreateSurveyProgress } from '@/lib/supabase'
+
+import Image from "next/image"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { isEmail } from 'validator';
+
+  export default function Component() {
+    const router = useRouter()
+    const [email, setEmail] = useState('')
+    const [loading, setLoading] = useState(false)
+  
+    const handleStartSurvey = async () => {
+      setLoading(true)
+      try {
+        const progress = await getOrCreateSurveyProgress(email)
+        if (progress) {
+          // If there's existing progress, redirect to the appropriate step
+          if (progress.status === 'completed') {
+            router.push('/thank-you')
+          } else {
+            router.push(`/question/${progress.step || 1}`)
+          }
+        }
+      } catch (error) {
+        console.error('Error starting survey:', error)
+        alert('An error occurred while starting the survey. Please try again later.');
+      }
+      setLoading(false)
+    }
+  
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+    <div className="min-h-screenbg-gradient-to-tl from-black to-gray-600 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute inset-0 lg:relative lg:h-[400px] order-1 lg:order-none">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
+          src="/path-to-your-shoe-image.png"
+          alt="Athletic shoe"
+          fill
+          className="object-contain transform -rotate-12 scale-150 lg:scale-100 opacity-50 lg:opacity-100 transition-transform duration-500"
           priority
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+        <div className="absolute top-1/4 left-1/4 w-16 h-16 lg:w-24 lg:h-24 bg-white rounded-full opacity-20 lg:opacity-30 transform -rotate-12 lg:rotate-0"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-8 lg:w-32 lg:h-10 bg-white opacity-20 lg:opacity-30 transform rotate-45 lg:rotate-0"></div>
+      </div>
+      
+      <div className="relative z-10 max-w-4xl w-full lg:grid lg:grid-cols-2 gap-8 items-center">
+        <div className="space-y-6 lg:col-start-2">
+          <div className="relative inline-block">
+            <h1 className="text-4xl md:text-5xl font-bold text-white">
+              Questionnaire
+            </h1>
+            <div className="absolute inset-0 border-2 border-orange-400 transform translate-x-2 translate-y-2 -z-10" />
+          </div>
+          
+          <Card className="bg-pink-200 border-none">
+            <CardContent className="p-4 space-y-2">
+              <h2 className="font-semibold">Welcome!</h2>
+              <p className="text-sm">
+                We&apos;re excited to hear your thoughts, ideas, and insights. Don&apos;t worry about right or wrong answers—just speak from the heart.
+              </p>
+              <p className="text-sm">
+                Your genuine feedback is invaluable to us!
+              </p>
+            </CardContent>
+          </Card>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          <form className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-white">
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter email address..."
+                className="bg-white"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            
+            <Button onClick={handleStartSurvey} disabled={loading}
+              className="w-full bg-lime-300 hover:bg-lime-400 text-black font-semibold group"
+            >
+              Start Survey
+              <span className="inline-block transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Button>
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
-  );
+  )
 }
