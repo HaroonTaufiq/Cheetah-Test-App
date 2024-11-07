@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { updateSurveyProgress, getSurveyProgress } from '@/lib/supabase'
+import { Step2Data } from "../types/survey"
 
 type Ratings = {
   comfort: number | null
@@ -50,7 +51,7 @@ export default function Component() {
       return
     }
     if (email) {
-      const success = await updateSurveyProgress(email, 3, ratings)
+      const success = await updateSurveyProgress(email, 3, ratings as Step2Data)
       if (success) {
         router.push('/thank-you')
       } else {

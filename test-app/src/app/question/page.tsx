@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { updateSurveyProgress, getSurveyProgress } from '@/lib/supabase'
+import { Step1Data } from "../types/survey"
 
 export default function Component() {
   const [selected, setSelected] = useState<string>("")
@@ -44,7 +45,7 @@ export default function Component() {
       return
     }
     if (email) {
-      const success = await updateSurveyProgress(email, 2, { step1: selected })
+      const success = await updateSurveyProgress(email, 2, selected as Step1Data)
       if (success) {
         router.push('/rating')
       } else {

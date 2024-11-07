@@ -1,20 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-
-export type SurveyStep = 1 | 2 | 3
-
-export type SurveyProgress = {
-  email: string
-  step: SurveyStep
-  data: {
-    step1?: 'orange' | 'black'
-    step2?: {
-      comfort: number | null
-      looks: number | null
-      price: number | null
-    }
-  }
-  status: 'in-progress' | 'completed'
-}
+import { SurveyStep, SurveyProgress, Step2Data, Step1Data } from '../app/types/survey'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -66,8 +51,7 @@ export async function getOrCreateSurveyProgress(email: string): Promise<SurveyPr
 export async function updateSurveyProgress(
   email: string, 
   step: SurveyStep, 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  stepData: any
+  stepData: Step1Data | Step2Data
 ): Promise<boolean> {
   try {
     const { data: existingData, error: fetchError } = await supabase

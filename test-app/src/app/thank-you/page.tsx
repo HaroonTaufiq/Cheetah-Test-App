@@ -9,7 +9,6 @@ import { completeSurvey, getSurveyProgress, deleteSurveyProgress } from '@/lib/s
 
 export default function Component() {
   const [isCompleted, setIsCompleted] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
@@ -108,6 +107,12 @@ export default function Component() {
               for your feedback!
             </p>
           </div>
+
+          {error && (
+          <div className="bg-red-500/10 border border-red-500 text-red-100 px-4 py-2 rounded">
+            {error}
+          </div>
+        )}
 
           {isCompleted && (
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
