@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { useRouter } from 'next/navigation'
+import { updateSurveyProgress, getSurveyProgress } from '@/lib/supabase'
 
 type Ratings = {
   comfort: number | null
@@ -18,20 +19,53 @@ export default function Component() {
     price: null
   })
   const [showErrors, setShowErrors] = useState(false)
+  const [email, setEmail] = useState<string | null>(null)
 
   const router = useRouter()
 
-  const handleSend = () => {
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('surveyEmail')
+    if (storedEmail) {
+      setEmail(storedEmail)
+    } else {
+      router.push('/')
+    }
+  }, [router])
+
+  useEffect(() => {
+    const loadProgress = async () => {
+      if (email) {
+        const progress = await getSurveyProgress(email)
+        if (progress && progress.data.step2) {
+          setRatings(progress.data.step2 as Ratings)
+        }
+      }
+    }
+    loadProgress()
+  }, [email])
+
+  const handleSend = async () => {
     if (Object.values(ratings).some(rating => rating === null)) {
       setShowErrors(true)
       return
     }
-    router.push('/thank-you')
+    if (email) {
+      const success = await updateSurveyProgress(email, 3, ratings)
+      if (success) {
+        router.push('/thank-you')
+      } else {
+        setShowErrors(true)
+      }
+    }
   }
 
   const handleRating = (category: keyof Ratings, value: number) => {
     setRatings(prev => ({ ...prev, [category]: value }))
     setShowErrors(false)
+  }
+
+  const handleBack = () => {
+    router.push('/question')
   }
 
   const RatingScale = ({ category, error }: { category: keyof Ratings; error: boolean }) => (
@@ -81,6 +115,7 @@ export default function Component() {
           <Button
             variant="ghost"
             className="bg-pink-200 hover:bg-pink-300 text-black"
+            onClick={handleBack}
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>

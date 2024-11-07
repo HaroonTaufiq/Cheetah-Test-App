@@ -1,144 +1,168 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Types for our survey data
-export type SurveyStep = 1 | 2
+export type SurveyStep = 1 | 2 | 3
 
-// Types for our survey data
 export type SurveyProgress = {
   email: string
-  progress: {
-    step1?: string // Nike Orange or Nike Black
+  step: SurveyStep
+  data: {
+    step1?: 'orange' | 'black'
     step2?: {
-      Comfort?: number
-      Looks?: number
-      Price?: number
+      comfort: number | null
+      looks: number | null
+      price: number | null
     }
   }
-  status: 'in-progress' | 'completed',
-  step: SurveyStep
+  status: 'in-progress' | 'completed'
 }
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Function to start or resume a survey
 export async function getOrCreateSurveyProgress(email: string): Promise<SurveyProgress | null> {
-  const { data, error } = await supabase
-    .from('survey_progress')
-    .select('*')
-    .eq('email', email)
-    .single()
-
-  if (error && error.code !== 'PGRST116') {
-    console.error('Error fetching survey progress:', error)
-    return null
-  }
-
-  if (!data) {
-    const newProgress: SurveyProgress = {
-      email,
-      progress: {},
-      status: 'in-progress',
-      step: 1
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data: newData, error: insertError } = await supabase
+  try {
+    const { data, error } = await supabase
       .from('survey_progress')
-      .insert([{ 
-        email, 
-        data: newProgress,
-        step: 1
-      }])
-      .select()
+      .select('*')
+      .eq('email', email)
       .single()
 
-    if (insertError) {
-      console.error('Error creating survey progress:', insertError)
-      return null
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching survey progress:', error)
+      throw error
     }
 
-    return newProgress
-  }
+    if (!data) {
+      const newProgress: SurveyProgress = {
+        email,
+        step: 1,
+        data: {},
+        status: 'in-progress'
+      }
 
-  return data.data as SurveyProgress
+      const { data: insertedData, error: insertError } = await supabase
+        .from('survey_progress')
+        .insert([newProgress])
+        .select()
+        .single()
+
+      if (insertError) {
+        console.error('Error creating survey progress:', insertError)
+        throw insertError
+      }
+
+      return insertedData as SurveyProgress
+    }
+
+    return data as SurveyProgress
+  } catch (error) {
+    console.error('Unexpected error in getOrCreateSurveyProgress:', error)
+    throw error
+  }
 }
 
-// Function to update survey progress
 export async function updateSurveyProgress(
   email: string, 
   step: SurveyStep, 
-  progressData: Partial<SurveyProgress['progress']>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  stepData: any
 ): Promise<boolean> {
-  const { data: existingData } = await supabase
-    .from('survey_progress')
-    .select('data')
-    .eq('email', email)
-    .single()
+  try {
+    const { data: existingData, error: fetchError } = await supabase
+      .from('survey_progress')
+      .select('*')
+      .eq('email', email)
+      .single()
 
-  if (!existingData) return false
-
-  const updatedData = {
-    ...existingData.data,
-    progress: {
-      ...existingData.data.progress,
-      ...progressData
+    if (fetchError) {
+      console.error('Error fetching existing survey progress:', fetchError)
+      return false
     }
-  }
 
-  const { error } = await supabase
-    .from('survey_progress')
-    .update({ 
-      step,
-      data: updatedData,
-      updated_at: new Date().toISOString()
-    })
-    .eq('email', email)
+    if (!existingData) return false
 
-  if (error) {
-    console.error('Error updating survey progress:', error)
+    const updatedData = {
+      ...existingData.data,
+      [`step${step}`]: stepData
+    }
+
+    const { error: updateError } = await supabase
+      .from('survey_progress')
+      .update({ 
+        step, 
+        data: updatedData, 
+        status: step === 3 ? 'completed' : 'in-progress' 
+      })
+      .eq('email', email)
+
+    if (updateError) {
+      console.error('Error updating survey progress:', updateError)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Unexpected error in updateSurveyProgress:', error)
     return false
   }
-
-  return true
 }
 
-// Function to complete survey
 export async function completeSurvey(email: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('survey_progress')
-    .update({ 
-      status: 'completed',
-      updated_at: new Date().toISOString()
-    })
-    .eq('email', email)
+  try {
+    const { error } = await supabase
+      .from('survey_progress')
+      .update({ status: 'completed' })
+      .eq('email', email)
 
-  if (error) {
-    console.error('Error completing survey:', error)
+    if (error) {
+      console.error('Error completing survey:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Unexpected error in completeSurvey:', error)
     return false
   }
-
-  return true
 }
 
-// Function to check survey status
-export async function getSurveyStatus(email: string): Promise<{
-  step: SurveyStep
-  status: string
-} | null> {
-  const { data, error } = await supabase
-    .from('survey_progress')
-    .select('step, status')
-    .eq('email', email)
-    .single()
+export async function getSurveyProgress(email: string): Promise<SurveyProgress | null> {
+  try {
+    const { data, error } = await supabase
+      .from('survey_progress')
+      .select('*')
+      .eq('email', email)
+      .single()
 
-  if (error) {
-    console.error('Error fetching survey status:', error)
+    if (error) {
+      console.error('Error fetching survey progress:', error)
+      return null
+    }
+
+    return data as SurveyProgress
+  } catch (error) {
+    console.error('Unexpected error in getSurveyProgress:', error)
     return null
   }
+}
 
-  return data
+export async function deleteSurveyProgress(email: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('survey_progress')
+      .delete()
+      .eq('email', email)
+
+    if (error) {
+      console.error('Error deleting survey progress:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Unexpected error in deleteSurveyProgress:', error)
+    return false
+  }
 }

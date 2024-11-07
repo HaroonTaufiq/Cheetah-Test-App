@@ -1,24 +1,60 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import { useRouter } from "next/router"
+import { updateSurveyProgress, getSurveyProgress } from '@/lib/supabase'
 
 export default function Component() {
   const [selected, setSelected] = useState<string>("")
   const [showError, setShowError] = useState(false)
+  const [email, setEmail] = useState<string | null>(null)
 
-  const router = useRouter();
+  const router = useRouter()
 
-  const handleNext = () => {
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('surveyEmail')
+    if (storedEmail) {
+      setEmail(storedEmail)
+    } else {
+      router.push('/')
+    }
+  }, [router])
+
+  useEffect(() => {
+    const loadProgress = async () => {
+      if (email) {
+        const progress = await getSurveyProgress(email)
+        if (progress && progress.step > 1) {
+          router.push('/rating')
+        } else if (progress && progress.data.step1) {
+          setSelected(progress.data.step1)
+        }
+      }
+    }
+    loadProgress()
+  }, [email, router])
+
+  const handleNext = async () => {
     if (!selected) {
       setShowError(true)
       return
     }
-    router.push(`/rating`);
+    if (email) {
+      const success = await updateSurveyProgress(email, 2, { step1: selected })
+      if (success) {
+        router.push('/rating')
+      } else {
+        setShowError(true)
+      }
+    }
+  }
+
+  const handleBack = () => {
+    router.push('/')
   }
 
   return (
@@ -79,13 +115,14 @@ export default function Component() {
         </RadioGroup>
 
         {showError && (
-          <p className="text-red-500 text-sm text-center">Please select one</p>
+          <p className="text-red-500 text-sm text-center">Please select one option</p>
         )}
 
         <div className="flex justify-between pt-4">
           <Button
             variant="ghost"
             className="bg-pink-200 hover:bg-pink-300 text-black"
+            onClick={handleBack}
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back
           </Button>
