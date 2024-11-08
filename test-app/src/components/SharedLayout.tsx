@@ -1,10 +1,10 @@
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { ReactNode } from "react";
+import { ReactNode } from "react"
 
 interface SharedLayoutProps {
-  children: ReactNode;
-  variant?: 'default' | 'blur';
+  children: ReactNode
+  variant?: 'default' | 'blur'
 }
 
 const SharedLayout = ({ children, variant = 'default' }: SharedLayoutProps) => {
@@ -119,4 +119,4 @@ const SharedLayout = ({ children, variant = 'default' }: SharedLayoutProps) => {
   )
 }
 
-export default SharedLayout;
+export default SharedLayout
