@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from "next/image"
 import { isEmail } from 'validator'
 
 import { getOrCreateSurveyProgress } from '@/lib/supabase'
@@ -10,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import SharedLayout from '../components/SharedLayout';
 
 export default function Component() {
   const router = useRouter()
@@ -28,7 +28,22 @@ export default function Component() {
       return
     }
 
-    try {
+    try {// Check if email exists
+      const checkResponse = await fetch('http://localhost:3001/check-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+  
+      const checkData = await checkResponse.json();
+  
+      if (checkData.exists) {
+        setError('This email has already been used.');
+        setLoading(false);
+        return;
+      }
       const progress = await getOrCreateSurveyProgress(email)
       if (progress) {
         localStorage.setItem('surveyEmail', email)
@@ -54,43 +69,8 @@ export default function Component() {
   const isValidEmail = isEmail(email)
 
   return (
-    <div className="min-h-screen bg-gradient-to-tl from-black to-gray-600 flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="relative z-10 max-w-4xl w-full lg:grid lg:grid-cols-2 gap-8 items-center">
-        {/* Image container - absolute on mobile, relative on desktop */}
-        <div className="absolute inset-0 lg:relative lg:col-start-1 lg:row-start-1 h-full lg:h-[400px]">
-          <div className="relative h-full w-full">
-            <Image
-              src="/shoe.png"
-              alt="Athletic shoe"
-              fill
-              className="object-contain scale-80 lg:scale-100 transform -rotate-12 hover:rotate-0 transition-transform duration-500 "
-              priority
-            />
-            <div className="absolute top-0 left-0 transform -translate-x-1/4 -translate-y-1/4 opacity-50 lg:opacity-50">
-              <Image
-                src="/Union.png"
-                alt="Decorative element"
-                width={250}
-                height={250}
-                className="object-contain scale-75 lg:scale-100"
-                priority
-              />
-            </div>
-            <div className="absolute bottom-0 left-0 w-full opacity-60 lg:opacity-60">
-              <Image
-                src="/Elipse.png"
-                alt="Decorative element"
-                width={700}
-                height={100}
-                className="object-contain scale-75 lg:scale-100"
-                priority
-              />
-            </div>
-          </div>
-        </div>
+    <SharedLayout>
 
-        {/* Form container */}
-        <div className="relative z-20 lg:col-start-2 lg:row-start-1 p-9 rounded-lg">
           <div className="space-y-6">
             <div className="relative inline-block">
               <h1 className="text-4xl md:text-5xl font-bold text-white">
@@ -145,8 +125,6 @@ export default function Component() {
               </Button>
             </form>
           </div>
-        </div>
-      </div>
-    </div>
+          </SharedLayout>
   )
 }

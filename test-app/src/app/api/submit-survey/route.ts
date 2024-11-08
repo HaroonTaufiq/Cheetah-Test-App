@@ -1,32 +1,24 @@
 import { NextResponse } from 'next/server'
-import { MongoClient } from 'mongodb'
-
-const uri = process.env.MONGODB_URI as string
-
-if (!uri) {
-  throw new Error('Please add your Mongo URI to .env.local')
-}
 
 export async function POST(request: Request) {
-  const client = new MongoClient(uri)
   try {
-    const body = await request.json()
-    await client.connect()
-    const database = client.db('survey_db')
-    const surveys = database.collection('surveys')
+    const body = await request.json();
+    const response = await fetch('https://cheetah-test-app-flnl-bqs3e9usc-haroon-taufiqs-projects.vercel.app/api/submit-survey', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
 
-    // Add a timestamp to the survey data
-    const surveyData = {
-      ...body,
-      submittedAt: new Date()
+    if (!response.ok) {
+      throw new Error('Error submitting survey');
     }
 
-    const result = await surveys.insertOne(surveyData)
-    return NextResponse.json({ message: 'Survey submitted successfully', id: result.insertedId }, { status: 200 })
+    const data = await response.json();
+    return NextResponse.json({ message: data.message, id: data.id }, { status: 200 });
   } catch (error) {
-    console.error('Error submitting survey to MongoDB:', error)
-    return NextResponse.json({ message: 'Error submitting survey' }, { status: 500 })
-  } finally {
-    await client.close()
+    console.error('Error submitting survey:', error);
+    return NextResponse.json({ message: 'Error submitting survey' }, { status: 500 });
   }
 }

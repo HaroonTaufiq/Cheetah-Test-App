@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { updateSurveyProgress, getSurveyProgress } from '@/lib/supabase'
 import { Step2Data } from "../types/survey"
+import SharedLayout from "@/components/SharedLayout";
 
 type Ratings = {
   comfort: number | null
@@ -97,8 +98,8 @@ export default function Component() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-tl from-black to-gray-600 flex items-center justify-center p-4">
-      <div className="max-w-xl w-full space-y-8">
+    <SharedLayout variant="blur">
+      <div className="max-w-xl w-full space-y-8 mx-auto pt-48 lg:pt-0">
         <div className="text-center space-y-4">
           <span className="text-white/60 text-sm">QUESTION 2</span>
           <h2 className="text-2xl font-bold text-white">
@@ -128,6 +129,6 @@ export default function Component() {
           </Button>
         </div>
       </div>
-    </div>
+      </SharedLayout>
   )
 }
