@@ -29,7 +29,7 @@ export default function Component() {
     }
 
     try {// Check if email exists
-      const checkResponse = await fetch('https://cheetah-test-app-flnl-bqs3e9usc-haroon-taufiqs-projects.vercel.app/api/check-email', {
+      const checkResponse = await fetch('https://cheetah-test-app-flnl.vercel.app/api/check-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

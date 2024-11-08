@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const response = await fetch('https://cheetah-test-app-flnl-bqs3e9usc-haroon-taufiqs-projects.vercel.app/api/submit-survey', {
+    const response = await fetch('https://cheetah-test-app-flnl.vercel.app/api/submit-survey', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

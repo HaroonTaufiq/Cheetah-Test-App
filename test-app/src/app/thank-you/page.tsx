@@ -22,7 +22,7 @@ export default function Component() {
             const success = await completeSurvey(email);
             if (success) {
               // Transfer data to MongoDB and delete from Supabase
-              const response = await fetch('https://cheetah-test-app-flnl-bqs3e9usc-haroon-taufiqs-projects.vercel.app/api/submit-survey', {
+              const response = await fetch('https://cheetah-test-app-flnl.vercel.app/api/submit-survey', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
