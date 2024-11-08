@@ -9,10 +9,12 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://cheetah-test-app.vercel.app/' // Replace with your actual frontend URL
+    ? 'https://cheetah-test-app.vercel.app' // Removed trailing slash
     : 'http://localhost:3000',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type']
+  methods: ['GET', 'POST', 'OPTIONS'], // Added OPTIONS for preflight
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin'],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 app.use(express.json());
 
