@@ -5,7 +5,7 @@ const logger = require('./utils/logger');
 let client;
 
 async function connectToMongo() {
-  if (client && client.isConnected()) return client;
+  if (client?.topology?.isConnected?.()) return client;
 
   const uri = process.env.MONGODB_URI;
   if (!uri) {
@@ -18,6 +18,9 @@ async function connectToMongo() {
       useUnifiedTopology: true,
     });
     await client.connect();
+    
+    // Test connection
+    await client.db().admin().ping();
     logger.info('Connected to MongoDB');
     return client;
   } catch (error) {
@@ -26,12 +29,16 @@ async function connectToMongo() {
   }
 }
 
-process.on('SIGINT', async () => {
+// Add connection close handler
+async function closeConnection() {
   if (client) {
     await client.close();
-    logger.info('MongoDB connection closed through app termination');
-    process.exit(0);
+    client = null;
+    logger.info('MongoDB connection closed');
   }
-});
+}
 
-module.exports = { connectToMongo };
+module.exports = {
+  connectToMongo,
+  closeConnection
+};
