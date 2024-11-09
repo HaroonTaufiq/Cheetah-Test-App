@@ -1,24 +1,44 @@
+const logger = require("../utils/logger");
 const { connectToMongo } = require("../db");
 
 async function submitSurvey(req, res) {
+  logger.info('Submit survey endpoint hit', { 
+    method: req.method,
+    path: req.path,
+    body: req.body 
+  });
+
   let client;
   try {
+    // Validate request
+    if (!req.body || !req.body.email) {
+      logger.warn('Invalid request body');
+      return res.status(400).json({ message: 'Invalid request body' });
+    }
+
     client = await connectToMongo();
-    const body = req.body;
+    logger.info('MongoDB connected');
+    
     const database = client.db("survey_db");
     const surveys = database.collection("surveys");
 
-    const result = await surveys.insertOne(body);
+    const result = await surveys.insertOne(req.body);
+    logger.info('Survey inserted', { id: result.insertedId });
+
     res.status(200).json({
       message: "Survey submitted successfully",
       id: result.insertedId,
     });
   } catch (error) {
-    console.error("Error submitting survey to MongoDB:", error);
-    res.status(500).json({ message: "Error submitting survey", error: error.message });
+    logger.error('Survey submission failed', { 
+      error: error.message,
+      stack: error.stack 
+    });
+    res.status(500).json({ message: "Error submitting survey" });
   } finally {
     if (client) {
       await client.close();
+      logger.info('MongoDB connection closed');
     }
   }
 }
@@ -39,4 +59,4 @@ async function checkEmail(req, res) {
   }
 }
 
-module.exports = { submitSurvey, checkEmail };
+module.exports = { submitSurvey, checkEmail, testEndpoint };
