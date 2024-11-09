@@ -1,6 +1,7 @@
 
 const express = require('express');
 const { submitSurvey, checkEmail } = require('../controllers/surveyController');
+// const validateSurvey = require('../middlewares/validateSurvey');
 
 const router = express.Router();
 
