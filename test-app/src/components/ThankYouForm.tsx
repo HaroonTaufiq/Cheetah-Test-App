@@ -41,16 +41,12 @@ export default function ThankYouForm() {
             } else {
               throw new Error('Failed to complete survey in Supabase');
             }
-          } else {
-            router.push('/');
-          }
+          } 
         } catch (error) {
           console.error('Error finalizing survey:', error);
           setError('An error occurred while finalizing your survey. Please try again.');
         }
-      } else {
-        router.push('/');
-      }
+      } 
     };
 
     finalizeSurvey();

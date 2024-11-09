@@ -34,7 +34,6 @@ export default function RatingForm() {
       if (email) {
         const progress = await getSurveyProgress(email)
         if (progress && progress.data.step2) {
-          setRatings(progress.data.step2)
         }
       }
     }
@@ -47,7 +46,7 @@ export default function RatingForm() {
       return
     }
     if (email) {
-      const success = await updateSurveyProgress(email, 3, ratings)
+      const success = await updateSurveyProgress(email, 3, ratings as Step2Data)
       if (success) {
         router.push('/thank-you')
       } else {
