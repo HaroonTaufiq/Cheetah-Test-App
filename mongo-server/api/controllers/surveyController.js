@@ -1,6 +1,4 @@
-// controllers/surveyController.js
 const { connectToMongo } = require("../db");
-const logger = require("../utils/logger");
 
 async function submitSurvey(req, res) {
   let client;
@@ -24,18 +22,15 @@ async function submitSurvey(req, res) {
     const surveys = database.collection("surveys");
 
     const result = await surveys.insertOne(transformedData);
-    logger.info(`Survey submitted successfully for email: ${body.email}`);
-    res.status(200).json({
-      message: "Survey submitted successfully",
-      id: result.insertedId,
-    });
+    res
+      .status(200)
+      .json({
+        message: "Survey submitted successfully",
+        id: result.insertedId,
+      });
   } catch (error) {
-    logger.error(`Error submitting survey to MongoDB: ${error.message}`);
+    console.error("Error submitting survey to MongoDB:", error);
     res.status(500).json({ message: "Error submitting survey" });
-  } finally {
-    if (client) {
-      await client.close();
-    }
   }
 }
 
@@ -48,15 +43,10 @@ async function checkEmail(req, res) {
     const surveys = database.collection("surveys");
 
     const existingSurvey = await surveys.findOne({ email });
-    logger.info(`Email check performed for: ${email}`);
     res.status(200).json({ exists: !!existingSurvey });
   } catch (error) {
-    logger.error(`Error checking email in MongoDB: ${error.message}`);
+    console.error("Error checking email in MongoDB:", error);
     res.status(500).json({ message: "Error checking email" });
-  } finally {
-    if (client) {
-      await client.close();
-    }
   }
 }
 
