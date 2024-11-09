@@ -5,32 +5,21 @@ async function submitSurvey(req, res) {
   try {
     client = await connectToMongo();
     const body = req.body;
-
-    // Transform the data to the desired format
-    const transformedData = {
-      email: body.email,
-      first_question: JSON.stringify(body.data.step2),
-      second_question: JSON.stringify({
-        looks: body.data.step3.looks,
-        price: body.data.step3.price,
-        comfort: body.data.step3.comfort,
-      }),
-      submittedAt: new Date(),
-    };
-
     const database = client.db("survey_db");
     const surveys = database.collection("surveys");
 
-    const result = await surveys.insertOne(transformedData);
-    res
-      .status(200)
-      .json({
-        message: "Survey submitted successfully",
-        id: result.insertedId,
-      });
+    const result = await surveys.insertOne(body);
+    res.status(200).json({
+      message: "Survey submitted successfully",
+      id: result.insertedId,
+    });
   } catch (error) {
     console.error("Error submitting survey to MongoDB:", error);
-    res.status(500).json({ message: "Error submitting survey" });
+    res.status(500).json({ message: "Error submitting survey", error: error.message });
+  } finally {
+    if (client) {
+      await client.close();
+    }
   }
 }
 

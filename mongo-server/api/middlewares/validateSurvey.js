@@ -1,22 +1,36 @@
 // middlewares/validateSurvey.js
-const Joi = require('joi');
+const { z } = require('zod');
 
-const surveySchema = Joi.object({
-  email: Joi.string().email().required(),
-  data: Joi.object({
-    step2: Joi.object().required(),
-    step3: Joi.object({
-      looks: Joi.number().min(1).max(5).required(),
-      price: Joi.number().min(1).max(5).required(),
-      comfort: Joi.number().min(1).max(5).required(),
-    }).required(),
-  }).required(),
+const step2Schema = z.object({
+  comfort: z.number().int().min(1).max(5),
+  looks: z.number().int().min(1).max(5),
+  price: z.number().int().min(1).max(5),
+});
+
+const surveySchema = z.object({
+  email: z.string().email(),
+  step: z.number().int().min(1).max(3),
+  data: z.object({
+    step1: z.enum(['orange', 'black']).optional(),
+    step2: z.union([step2Schema, z.string()]).transform((val) => {
+      if (typeof val === 'string') {
+        try {
+          return JSON.parse(val)
+        } catch {
+          throw new Error('Invalid JSON string for step2')
+        }
+      }
+      return val
+    }),
+  }),
+  status: z.enum(['in-progress', 'completed']),
 });
 
 module.exports = (req, res, next) => {
-  const { error } = surveySchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
+  try {
+    surveySchema.parse(req.body);
+    next();
+  } catch (error) {
+    res.status(400).json({ error: error.errors });
   }
-  next();
 };
