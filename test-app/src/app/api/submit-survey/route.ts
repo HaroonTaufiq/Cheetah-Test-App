@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorData = await response.json()
       console.error('Error from external API:', errorData)
-      throw new Error(`Error submitting survey: ${errorData.message || 'Unknown error'}`)
+      return NextResponse.json({ message: 'Error submitting survey', error: errorData.message || 'Unknown error' }, { status: response.status })
     }
 
     const data = await response.json()

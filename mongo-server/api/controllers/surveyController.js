@@ -35,12 +35,7 @@ async function submitSurvey(req, res) {
       stack: error.stack 
     });
     res.status(500).json({ message: "Error submitting survey" });
-  } finally {
-    if (client) {
-      await client.close();
-      logger.info('MongoDB connection closed');
-    }
-  }
+  } 
 }
 
 async function checkEmail(req, res) {
@@ -59,4 +54,4 @@ async function checkEmail(req, res) {
   }
 }
 
-module.exports = { submitSurvey, checkEmail, testEndpoint };
+module.exports = { submitSurvey, checkEmail };
