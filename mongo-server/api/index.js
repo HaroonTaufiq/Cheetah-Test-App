@@ -1,23 +1,47 @@
 // api/index.js
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const surveyRoutes = require('./routes/surveyRoutes');
 const logger = require('./utils/logger');
-
+const PORT = process.env.PORT || 5000;
 // Initialize express
 const app = express();
 
-// Middleware
+// Security headers
+app.use(helmet()); 
+
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ['https://cheetah-test-app.vercel.app', 'http://localhost:3000'];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://cheetah-test-app.vercel.app'
-    : 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization','Accept', 'Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
   credentials: true,
   optionsSuccessStatus: 200
 }));
+
 app.use(express.json());
+
+// Request logging
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
 
 // Routes
 app.use('/api', surveyRoutes);
@@ -30,6 +54,12 @@ app.use((err, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info(`Server running on http://localhost:${PORT}`);
+  });
+}
 
 // 404 handler
 app.use((req, res) => {

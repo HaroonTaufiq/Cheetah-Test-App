@@ -1,6 +1,18 @@
 const logger = require("../utils/logger");
 const { connectToMongo } = require("../db");
 
+function transformSurveyData(mongoDoc) {
+  return {
+    email: mongoDoc.email,
+    first_question: mongoDoc.data.step2,
+    second_question: {
+      comfort: Number(mongoDoc.data.step3.comfort.$numberInt || mongoDoc.data.step3.comfort),
+      looks: Number(mongoDoc.data.step3.looks.$numberInt || mongoDoc.data.step3.looks),
+      price: Number(mongoDoc.data.step3.price.$numberInt || mongoDoc.data.step3.price)
+    }
+  };
+}
+
 async function submitSurvey(req, res) {
   logger.info('Submit survey endpoint hit', { 
     method: req.method,
@@ -11,7 +23,7 @@ async function submitSurvey(req, res) {
   let client;
   try {
     // Validate request
-    if (!req.body || !req.body.email) {
+    if (!req.body || !req.body.email || !req.body.data || !req.body.data.step2 || !req.body.data.step3) {
       logger.warn('Invalid request body');
       return res.status(400).json({ message: 'Invalid request body' });
     }
@@ -22,7 +34,10 @@ async function submitSurvey(req, res) {
     const database = client.db("survey_db");
     const surveys = database.collection("surveys");
 
-    const result = await surveys.insertOne(req.body);
+    // Transform the data before storing
+    const transformedData = transformSurveyData(req.body);
+    
+    const result = await surveys.insertOne(transformedData);
     logger.info('Survey inserted', { id: result.insertedId });
 
     res.status(200).json({
@@ -35,7 +50,12 @@ async function submitSurvey(req, res) {
       stack: error.stack 
     });
     res.status(500).json({ message: "Error submitting survey" });
-  } 
+  } finally {
+    if (client) {
+      await client.close();
+      logger.info('MongoDB connection closed');
+    }
+  }
 }
 
 async function checkEmail(req, res) {
@@ -49,8 +69,13 @@ async function checkEmail(req, res) {
     const existingSurvey = await surveys.findOne({ email });
     res.status(200).json({ exists: !!existingSurvey });
   } catch (error) {
-    console.error("Error checking email in MongoDB:", error);
+    logger.error("Error checking email in MongoDB:", error);
     res.status(500).json({ message: "Error checking email" });
+  } finally {
+    if (client) {
+      await client.close();
+      logger.info('MongoDB connection closed');
+    }
   }
 }
 
