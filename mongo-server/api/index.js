@@ -13,7 +13,7 @@ app.use(cors({
     ? 'https://cheetah-test-app.vercel.app'
     : 'http://localhost:3000',
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization','Accept', 'Origin'],
   credentials: true,
   optionsSuccessStatus: 200
 }));

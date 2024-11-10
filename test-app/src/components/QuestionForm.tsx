@@ -29,10 +29,12 @@ export default function QuestionOneForm() {
     const loadProgress = async () => {
       if (email) {
         const progress = await getSurveyProgress(email)
-        if (progress && progress.step > 1) {
-          router.push('/rating')
-        } else if (progress && progress.data.step1) {
-          setSelected(progress.data.step1)
+        // if (progress && progress.step > 1) {
+        //   // router.push('/rating')
+        // } else if (progress && progress.data.step1) {
+        //   setSelected(progress.data.step1)
+        if (progress && progress.data.step1) {
+             setSelected(progress.data.step1)
         }
       }
     }
