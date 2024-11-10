@@ -4,7 +4,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const surveyRoutes = require('./routes/surveyRoutes');
 const logger = require('./utils/logger');
-const PORT = process.env.PORT || 5000;
 // Initialize express
 const app = express();
 
@@ -54,12 +53,6 @@ app.use((err, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });
-
-if (require.main === module) {
-  app.listen(PORT, () => {
-    logger.info(`Server running on http://localhost:${PORT}`);
-  });
-}
 
 // 404 handler
 app.use((req, res) => {
