@@ -50,12 +50,13 @@ async function submitSurvey(req, res) {
       stack: error.stack 
     });
     res.status(500).json({ message: "Error submitting survey" });
-  } finally {
-    if (client) {
-      await client.close();
-      logger.info('MongoDB connection closed');
-    }
   }
+  //  finally {
+  //   if (client) {
+  //     await client.close();
+  //     logger.info('MongoDB connection closed');
+  //   }
+  // }
 }
 
 async function checkEmail(req, res) {
@@ -71,12 +72,57 @@ async function checkEmail(req, res) {
   } catch (error) {
     logger.error("Error checking email in MongoDB:", error);
     res.status(500).json({ message: "Error checking email" });
-  } finally {
-    if (client) {
-      await client.close();
-      logger.info('MongoDB connection closed');
-    }
-  }
+  } 
+  // finally {
+  //   if (client) {
+  //     await client.close();
+  //     logger.info('MongoDB connection closed');
+  //   }
+  // }
 }
 
-module.exports = { submitSurvey, checkEmail };
+async function getSurvey(req, res) {
+  const email = req.query.email;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  let client;
+  try {
+    client = await connectToMongo();
+    const database = client.db("survey_db");
+    const surveys = database.collection("surveys");
+
+    const survey = await surveys.findOne({ email });
+
+    if (!survey) {
+      return res.status(404).json({ error: 'Survey not found' });
+    }
+
+    // Transform data to match required format
+    const transformedData = {
+      email: survey.email,
+      step: 3,
+      data: {
+        step1: survey.first_question,
+        step2: survey.second_question
+      },
+      status: 'completed'
+    };
+    
+    console.log(transformedData)
+    res.status(200).json(transformedData);
+  } catch (error) {
+    logger.error("Error fetching survey:", error);
+    res.status(500).json({ error: 'Internal server error' });
+  } 
+  // finally {
+  //   if (client) {
+  //     await client.close();
+  //     logger.info('MongoDB connection closed');
+  //   }
+  // }
+}
+
+module.exports = { submitSurvey, checkEmail, getSurvey };
