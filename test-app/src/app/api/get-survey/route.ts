@@ -182,17 +182,17 @@ export async function GET(
 }
 
 // Frontend type-safe utility function
-export async function fetchSurveyData(email: string): Promise<SurveyResponse> {
-  const response = await fetch(`/api/survey?email=${encodeURIComponent(email)}`);
-  const result = (await response.json()) as ApiResponse;
+// export async function FetchDataSurvey(email: string): Promise<SurveyResponse> {
+//   const response = await fetch(`/api/survey?email=${encodeURIComponent(email)}`);
+//   const result = (await response.json()) as ApiResponse;
   
-  if (!result.success) {
-    throw new Error(`API Error: ${result.error.code} - ${
-      'message' in result.error ? result.error.message : 
-      'errors' in result.error ? JSON.stringify(result.error.errors) : 
-      'Unknown error'
-    }`);
-  }
+//   if (!result.success) {
+//     throw new Error(`API Error: ${result.error.code} - ${
+//       'message' in result.error ? result.error.message : 
+//       'errors' in result.error ? JSON.stringify(result.error.errors) : 
+//       'Unknown error'
+//     }`);
+//   }
   
-  return result.data;
-}
+//   return result.data;
+// }
