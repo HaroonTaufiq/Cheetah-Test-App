@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Home } from "lucide-react"
-import { completeSurvey, getSurveyProgress, deleteSurveyProgress } from '@/lib/supabase'
+import { completeSurvey, getSurveyProgress, deleteSurveyProgress, updateSurveyProgress } from '@/lib/supabase'
 
 export default function ThankYouForm() {
   const [isCompleted, setIsCompleted] = useState(false)
@@ -52,8 +52,32 @@ export default function ThankYouForm() {
     finalizeSurvey();
   }, [router]);
 
-  const handleBack = () => {
-    router.push('/rating')
+  const handleBack = async () => {
+    const email = localStorage.getItem('surveyEmail')
+    if (!email) {
+      setError('Email not found');
+      return;
+    }
+    if (email) {
+
+      try {
+        // Fetch survey data from MongoDB
+        const response = await fetch(`/api/get-survey?email=${email}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch survey data')
+        }
+        const surveyData = await response.json()
+
+        // Update Supabase with the fetched data
+        await updateSurveyProgress(email, 3, surveyData.data)
+
+        // Navigate to the first question
+        router.push('/rating')
+      } catch (error) {
+        console.error('Error starting edit process:', error)
+        setError('An error occurred while trying to edit your survey. Please try again.')
+      }
+    }
   }
 
   const handleHome = () => {
@@ -84,7 +108,7 @@ export default function ThankYouForm() {
             className="bg-pink-200 hover:bg-pink-300 text-black"
             onClick={handleBack}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            <ArrowLeft className="mr-2 h-4 w-4" /> Edit Survey
           </Button>
         </div>
       )}
